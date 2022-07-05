@@ -12,6 +12,7 @@ namespace Ajax.Controllers
         private DBEntities db = new DBEntities();
         public ActionResult Index()
         {
+            //dkjsfishgfhu
             return View();
         }
         public JsonResult GetData()
