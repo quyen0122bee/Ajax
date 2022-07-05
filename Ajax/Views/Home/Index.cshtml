@@ -1,0 +1,345 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+<style>
+    body {
+        background-color: #222;
+    }
+
+    .body-content {
+        background-color: white;
+    }
+
+    #modalTitle {
+        /*text-align:center;*/
+    }
+
+    .wrap-table {
+        min-height: 450px;
+        margin-top: 2%;
+    }
+
+    .panel-primary {
+        border: none;
+    }
+
+    .input-group {
+        float: right;
+    }
+
+    .form-outline {
+        float: left;
+    }
+</style>
+
+
+
+
+
+<div class="wrap-table">
+
+    <div class="row">
+        <div class="col-sm-2">
+            <button id="btnAdd" type="button" class="btn btn-primary">
+                Add New
+            </button>
+        </div>
+
+        <div class="col-sm-4 col-sm-offset-6 text-right">
+            <div class="input-group">
+                <input type="text" id="txtSearch" class="form-control" placeholder="Type to search" />
+                @*<label class="form-label" for="form1">Search</label>*@
+            </div>
+            <div class="input-group-btn">
+                <button type="submit" class="btn btn-primary btn-search" id="btnSearch">
+                    @*<i class="fas fa-search"></i>*@
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <table class="table">
+
+        <thead>
+
+            <tr>
+                <th class="col-sm-1">
+                    STT
+                </th>
+                <th class="col-sm-3">
+                    Ho
+                </th>
+                <th class="col-sm-5">
+                    Ten
+                </th>
+
+                <th class="col-sm-2">
+                </th>
+            </tr>
+        </thead>
+        <tbody id="tblDs">
+        </tbody>
+
+
+
+
+    </table>
+    <!-- modal hien thi -->
+    <div class="modal" tabindex="-1" role="dialog" id="modaldanhsach">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" id="modalTitle"></div>
+                    <div class="panel-body">
+                        @*phan biet btn xac nhan cua add va edit*@
+                        <input type="text" hidden id="idDanhSach" value="" />
+
+
+                        <div class="form-group">
+                            <label>Ho</label>
+                            <input type="text" class="form-control" id="txtHo" placeholder="Nhap Ho">
+                        </div>
+                        <div class="form-group">
+                            <label>Ten</label>
+                            <input type="text" class="form-control" id="txtTen" placeholder="Nhap Ten">
+                        </div>
+
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSubmit">Save</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            LoadDanhSach();
+        });
+
+        function LoadDanhSach() {
+            $.ajax({
+                url: '/Home/GetData',
+                type: 'get',
+                success: function (data) {
+                   // console.log(data);
+                    $('#tblDs').empty(); // lam trong
+                    $.each(data.dsTen, function (index, value) {
+                        let tr = '<tr id="' + value.Id + '">'
+                        tr += '<td>'+(index + 1) + '</td>';
+                        tr += '<td>' + value.Ho + '</td>';
+                        tr += '<td>' + value.Ten + '</td>';
+                        tr += '<td>';
+
+
+
+
+                        tr += '<button name = "detail" type="button" class="btn btn-info">  Detail  </button>&nbsp;' ;
+                        tr += '<button name = "edit" type="button" class="btn btn-warning">  Edit  </button>&nbsp;';
+                        tr += '<button name = "delete" type="button" class="btn btn-danger">  Delete  </button>&nbsp;';
+                        tr += '</td>';
+                        tr += '</tr>';
+                        $('#tblDs').append(tr);
+                    });
+                }
+            });
+        }
+        function LoadDanhSachSearch(search) {
+            $.ajax({
+                url: '/Home/GetDataSearch',
+                type: 'get',
+                data: {
+                    search: search
+                },
+                success: function (data) {
+                    // console.log(data);
+                    $('#tblDs').empty(); // lam trong
+                    $.each(data.dsTen, function (index, value) {
+                        let tr = '<tr id="' + value.Id + '">'
+                        tr += '<td>' + (index + 1) + '</td>';
+                        tr += '<td>' + value.Ho + '</td>';
+                        tr += '<td>' + value.Ten + '</td>';
+                        tr += '<td>';
+
+
+
+
+                        tr += '<button name = "detail" type="button" class="btn btn-info">  Detail  </button>&nbsp;';
+                        tr += '<button name = "edit" type="button" class="btn btn-warning">  Edit  </button>&nbsp;';
+                        tr += '<button name = "delete" type="button" class="btn btn-danger">  Delete  </button>&nbsp;';
+                        tr += '</td>';
+                        tr += '</tr>';
+                        $('#tblDs').append(tr);
+                    });
+                }
+            });
+        }
+        // bam nut them moi
+        $('#btnAdd').click(function () {
+            $('#modalTitle').text('Add New');
+            //gan gia tri cho text an o html rong
+            $('#idDanhSach').val('');
+
+            $('#modaldanhsach').modal();
+        });
+        //bam nut xac nhan
+        $('#btnSubmit').click(function () {
+            let ho = $('#txtHo').val().trim();
+            let ten = $('#txtTen').val().trim();
+            // kiem tra nhap
+            if (ho.length == 0 || ten.length == 0) {
+                alert('nhap day du du lieu')
+                return;
+
+            }
+
+            let idDanhSach = $('#idDanhSach').val().trim();
+            if (idDanhSach.length == 0) {
+                $.ajax({
+                    url: '/Home/AddData',
+                    type: 'post',
+                    data: {
+                        //tham so truyen vao ben conrol: tham so submit
+                        ho: ho,
+                        ten: ten
+
+                    },
+                    success: function (data) {
+
+                        alert('Thanh cong')
+                        LoadDanhSach();
+                        $('#txtHo').val('');
+                        $('#txtTen').val('');
+                        // hide popup
+                        $('#modaldanhsach').modal('hide');
+
+                    }
+
+                });
+            }
+            else {
+                // edit bang ajax
+                $.ajax({
+                    url: '/Home/Edit',
+                    type: 'post',
+                    data: {
+                        Id: idDanhSach,
+                        ho: ho,
+                        ten: ten
+
+                    },
+                    success: function (data) {
+                        alert('thanh cong');
+                        $('#modaldanhsach').modal('hide');
+                        LoadDanhSach();
+                    }
+                })
+
+
+
+            }
+
+
+
+        });
+        // xem chi tiet
+        $(document).on('click', "button[name = 'detail']", function () {
+            let idTen = $(this).closest('tr').attr('Id');
+            $('#modalTitle').text('Detail');
+
+            //alert(idTen);
+            $.ajax({
+                url: '/Home/Detail',
+                type: 'get',
+                data: {
+                    Id: idTen
+                },
+                success: function (data) {
+
+                    $('#txtHo').val(data.ds.Ho);
+                    $('#txtTen').val(data.ds.Ten1);
+
+                    $('#modaldanhsach').modal();
+
+
+                    // ko sua gia tri
+                    $('#txtHo').prop('readonly', true);
+                    $('#txtTen').prop('readonly', true);
+                    //hide btn
+                    $('#btnSubmit').hide();
+
+                }
+            })
+        })
+        // chinh sua
+        $(document).on('click', "button[name = 'edit']", function () {
+            let idTen = $(this).closest('tr').attr('Id');
+
+            $('#modalTitle').text('Edit Detail');
+            //alert(idTen);
+            $.ajax({
+                url: '/Home/Detail',
+                type: 'get',
+                data: {
+                    Id: idTen
+
+
+                },
+                success: function (data) {
+
+                    $('#txtHo').val(data.ds.Ho);
+                    $('#txtTen').val(data.ds.Ten1);
+                    // gan gia trij cho text an o html co id la idDanhSach = id
+                    $('#idDanhSach').val(idTen);
+
+                    $('#modaldanhsach').modal();
+
+                    // cho phep sua gia tri
+                    $('#txtHo').prop('readonly', false);
+                    $('#txtTen').prop('readonly', false);
+
+                    $('#btnSubmit').show();
+
+                    //alert(idTen);
+
+
+                }
+            })
+        })
+
+        // delete
+        $(document).on('click', "button[name = 'delete']", function () {
+            let idTen = $(this).closest('tr').attr('Id');
+            if (confirm("xoa?")) {
+                // dung ajax
+                $.ajax({
+                    url: '/Home/Delete',
+                    type: 'post',
+                    data: {
+                        Id: idTen
+                    },
+                    success: function (data) {
+                        LoadDanhSach();
+                    }
+                })
+            }
+
+        })
+        // tim kiem
+        var search = '';
+        $('#btnSearch').click(function(){
+            search = $('#txtSearch').val();
+            LoadDanhSachSearch(search);
+        });
+
+
+    </script>
+}
